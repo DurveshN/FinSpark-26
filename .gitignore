@@ -54,3 +54,4 @@ ml/data/
 !ml/artifacts/metrics.json
 
 .vercel
+npm-install.log

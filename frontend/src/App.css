@@ -3441,3 +3441,12 @@ input:checked + .pl-slider:before {
   border-color: #ff4b4b;
 }
 
+
+/* --- modular rebuild supplement (real-data dashboard + landing) --- */
+.landing-root { min-height: 100vh; background: #0d1117; color: #c9d1d9; padding: 48px 8vw; display: flex; flex-direction: column; gap: 40px; }
+.hero-badge { display: inline-block; align-self: flex-start; padding: 6px 14px; border: 1px solid #30363d; border-radius: 999px; color: #a78bfa; font-size: 13px; }
+.hero-accent { color: #a78bfa; }
+.hero-actions { margin-top: 24px; display: flex; gap: 12px; }
+.feature-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; }
+.landing-footer { margin-top: auto; padding-top: 24px; border-top: 1px solid #21262d; color: #8b949e; font-size: 13px; }
+.db-status-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #8b949e; }

@@ -52,14 +52,40 @@ class TelemetryReplay:
         flagged = [s for s in scores if s["prob"] >= self.threshold]
         threat_score = round(100 * float(np.mean([s["prob"] for s in scores])) if scores else 0.0, 1)
 
+        # REAL crypto-posture (quantum module) from logins active in THIS window
+        lg_win = self.logins[(self.logins["t_day"] >= lo) & (self.logins["t_day"] < hi)]
+        quantum = self._crypto_posture(lg_win)
+
         return {
             "window": [round(lo, 3), round(hi, 3)],
             "n_transactions": len(scores),
             "threat_score": threat_score,
             "active_threats": len(flagged),
             "betti_curve1": [round(x, 2) for x in result["betti_curve1"]],
+            "quantum": quantum,
             "flagged": sorted(flagged, key=lambda s: -s["prob"])[:10],
             "_data": result["data"], "_feats": result["feats"],
+        }
+
+    @staticmethod
+    def _crypto_posture(lg_win: pd.DataFrame) -> dict:
+        """Real quantum-risk posture from window logins: TLS vulnerability + downgrades.
+
+        Honest: measures the bank's own crypto exposure (quantum-vulnerable key
+        exchange, weak/downgraded ciphers) — NOT detection of passive interception.
+        """
+        if lg_win.empty:
+            return {"total_conns": 0, "quantum_vulnerable_pct": 0.0,
+                    "downgrade_events": 0, "modern_pct": 0.0}
+        tls = lg_win["tls"].astype(str)
+        vuln = tls.str.contains("RSA") | tls.str.startswith("TLS1.0") | tls.str.startswith("TLS1.2:ECDHE-RSA")
+        weak = tls.str.contains("EXPORT") | tls.str.startswith("TLS1.0")
+        n = len(lg_win)
+        return {
+            "total_conns": int(n),
+            "quantum_vulnerable_pct": round(100 * float(vuln.mean()), 1),
+            "downgrade_events": int(weak.sum()),
+            "modern_pct": round(100 * float((~vuln).mean()), 1),
         }
 
 
