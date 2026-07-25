@@ -23,6 +23,12 @@
 ## Cost note
 - ACR Basic (~$5/mo) + Container App (scale-to-1, consumption) + optional Postgres B1ms (~$12-15/mo). SQLite mode keeps it to ACR + Container App only. Confirm subscription type (student credit vs pay-as-you-go) before provisioning.
 
+## LIVE (2026-07-25)
+- Backend: https://ca-qtdhgnn-backend.ashyfield-9334e0d7.centralindia.azurecontainerapps.io
+- Health verified: `{"status":"ok","model_loaded":true}`; /metrics serves real held-out numbers.
+- Resources in `rg-qtdhgnn`: ACR `acrqtdhgnn7764`, Container Apps env `cae-qtdhgnn`, Container App `ca-qtdhgnn-backend`, Log Analytics `workspace-rgqtdhgnn*`.
+- Frontend Vercel env: `VITE_API_BASE` = the URL above; `VITE_WS_URL` = `wss://...azurecontainerapps.io/ws/stream`.
+
 ## Deploy flow
 
 1. Push to `main` → GitHub Actions `backend-deploy.yml` builds Docker image → pushes to ACR → updates Container App.
