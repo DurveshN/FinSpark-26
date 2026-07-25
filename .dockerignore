@@ -1,0 +1,19 @@
+# Keep the ACR build context small. The image needs backend/, ml/ (incl. trained
+# artifacts + data for replay) but NOT venvs, node_modules, caches, or git.
+**/.venv
+**/venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+.git
+frontend/dist
+frontend/npm-install.log
+backend/*.db
+backend/*.log
+backend/install.log
+backend/server.log
+ml/train.log
+ml/data/cust_betti_cache.csv
+docs
+assets
+*.stackdump
