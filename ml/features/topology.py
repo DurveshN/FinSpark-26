@@ -10,9 +10,10 @@ import numpy as np
 from ripser import ripser
 
 # cap point-cloud size so real-time windows stay bounded (VR is superlinear).
-# 60 keeps per-customer/window Betti well under a second; H2 is dropped by default
-# (near-always 0 on this data and the dominant cost).
-MAX_POINTS = 60
+# 200 keeps maxdim=1 Betti well under a second; H2 is dropped by default (near-always
+# 0 here and the dominant cost). Callers pre-sort by relevance, so we keep the FIRST
+# MAX_POINTS (deterministic) rather than a random sample that would break structure.
+MAX_POINTS = 200
 MIN_POINTS = 5
 
 
@@ -42,8 +43,7 @@ def betti_numbers(points: np.ndarray, maxdim: int = 1,
         return out
 
     if pts.shape[0] > MAX_POINTS:
-        idx = np.random.default_rng(0).choice(pts.shape[0], MAX_POINTS, replace=False)
-        pts = pts[idx]
+        pts = pts[:MAX_POINTS]   # deterministic; callers pre-sort by relevance
 
     dgms = ripser(pts, maxdim=maxdim)["dgms"]
     for k in range(min(maxdim, 2) + 1):
@@ -61,8 +61,7 @@ def betti_curve(points: np.ndarray, dim: int = 1, n_bins: int = 10,
     if pts.ndim != 2 or pts.shape[0] < 3:
         return [0.0] * n_bins
     if pts.shape[0] > MAX_POINTS:
-        idx = np.random.default_rng(0).choice(pts.shape[0], MAX_POINTS, replace=False)
-        pts = pts[idx]
+        pts = pts[:MAX_POINTS]   # deterministic; callers pre-sort by relevance
 
     dgms = ripser(pts, maxdim=max(dim, 1))["dgms"]
     if dim >= len(dgms) or dgms[dim].size == 0:

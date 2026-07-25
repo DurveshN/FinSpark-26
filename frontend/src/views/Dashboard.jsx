@@ -74,7 +74,7 @@ export default function Dashboard({ onExit }) {
         {/* trend + topology */}
         <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <ThreatTrend history={history} />
-          <BettiChart curve={latest ? latest.betti_curve1 : []} />
+          <BettiChart curve={latest ? latest.betti_curve1 : []} betti={latest ? latest.betti : null} />
         </div>
 
         {/* alerts + XAI */}

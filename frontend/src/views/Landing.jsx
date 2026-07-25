@@ -3,6 +3,8 @@ import { Play, Network, Boxes, FileSearch, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import HeroVisual from "../components/HeroVisual";
+import Architecture from "../components/Architecture";
 
 const FEATURES = [
   { icon: Network, title: "Cyber × Transaction Correlation",
@@ -22,30 +24,52 @@ export default function Landing({ onEnter }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,theme(colors.chart-2/10%),transparent_55%)]" />
 
       <div className="relative mx-auto max-w-6xl px-6 py-20">
-        <Badge variant="outline" className="mb-6 border-primary/30 bg-primary/10 text-primary">
-          Next-Gen Quantum-Topological Threat Detection
-        </Badge>
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div>
+            <Badge variant="outline" className="mb-6 border-primary/30 bg-primary/10 text-primary">
+              Next-Gen Quantum-Topological Threat Detection
+            </Badge>
 
-        <h1 className="max-w-3xl text-5xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl">
-          See Threats{" "}
-          <span className="bg-gradient-to-r from-primary via-fuchsia-400 to-sky-400 bg-clip-text text-transparent">
-            Before They Strike.
-          </span>
-        </h1>
+            <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl">
+              See Threats{" "}
+              <span className="bg-gradient-to-r from-primary via-fuchsia-400 to-sky-400 bg-clip-text text-transparent">
+                Before They Strike.
+              </span>
+            </h1>
 
-        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          QTD-HGNN correlates cybersecurity telemetry with transactional behaviour using a trained
-          graph neural network, topological data analysis, and explainable AI — built for
-          RBI-regulated banks, deployable in the bank's own cloud.
-        </p>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              QTD-HGNN correlates cybersecurity telemetry with transactional behaviour using a trained
+              graph neural network, topological data analysis, and explainable AI — built for
+              RBI-regulated banks, deployable in the bank's own cloud.
+            </p>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button size="lg" onClick={onEnter} className="gap-2">
-            <Play className="h-4 w-4" /> Open Live Dashboard
-          </Button>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button size="lg" onClick={onEnter} className="gap-2">
+                <Play className="h-4 w-4" /> Open Live Dashboard
+              </Button>
+            </div>
+          </div>
+
+          {/* live-looking correlation graph */}
+          <Card className="relative overflow-hidden border-border/60 bg-card/40 p-4 backdrop-blur">
+            <div className="absolute left-4 top-3 z-10 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" /> Correlated threat graph
+            </div>
+            <div className="aspect-[5/3] w-full">
+              <HeroVisual />
+            </div>
+            <p className="px-2 pb-1 text-center text-[11px] text-muted-foreground">
+              A new-device login → account → high-value transfer to a new payee — one connected attack path.
+            </p>
+          </Card>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* architecture */}
+        <div className="mt-20">
+          <Architecture />
+        </div>
+
+        <div className="mt-20 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {FEATURES.map((f) => (
             <Card key={f.title} className="group border-border/60 bg-card/50 p-6 backdrop-blur transition-colors hover:border-primary/40 hover:bg-card/70">
               <div className="mb-3 inline-flex rounded-lg bg-primary/10 p-2.5 text-primary ring-1 ring-primary/20">

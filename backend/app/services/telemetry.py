@@ -19,7 +19,7 @@ from app.config import settings
 from app.ml.model_store import store
 from ml.features.fusion import build_features
 from ml.features.graph import build_graph
-from ml.features.topology import betti_curve
+from ml.features.topology import betti_curve, betti_numbers
 
 WINDOW_DAYS = 0.5
 
@@ -39,6 +39,8 @@ class TelemetryReplay:
         self.min_day = 0.0
         self.threshold = 0.5
         self.ready = False
+        self.anom_buffer = np.empty((0, len(_TOPO_COLS)))   # rolling anomalous points for topology
+        self.BUFFER_MAX = 200
 
     def load(self) -> bool:
         lp = os.path.join(settings.data_dir, "logins.csv")
@@ -96,15 +98,28 @@ class TelemetryReplay:
         w = self.feats[(self.feats["t_day"] >= lo) & (self.feats["t_day"] < hi)]
         self.cursor = hi if hi < self.max_day else self.min_day     # loop
 
-        probs = w["prob"].to_numpy()
-        threat = round(100 * float(probs.mean()), 1) if len(probs) else 0.0
-        flagged_rows = w[w["prob"] >= self.threshold].sort_values("prob", ascending=False).head(10)
+        w_sorted = w.sort_values("prob", ascending=False)
+        # Composite threat score = mean of the top-N probabilities (severity of the
+        # riskiest activity), not mean over all benign txns (which is ~0). Real model
+        # output, but a SOC-meaningful, dynamic signal.
+        topN = w_sorted["prob"].to_numpy()[:20]
+        threat = round(100 * float(topN.mean()), 1) if len(topN) else 0.0
+
+        flagged_rows = w_sorted[w_sorted["prob"] >= self.threshold].head(10)
         flagged = [
             {"txn_id": r.txn_id, "customer_id": r.customer_id, "amount": float(r.amount),
              "prob": float(r.prob), "node_idx": int(r.node_idx), "scenario": r.scenario}
             for r in flagged_rows.itertuples(index=False)
         ]
-        curve = betti_curve(w[_TOPO_COLS].to_numpy(dtype=float), dim=1, n_bins=10) if len(w) else []
+        # Topology: accumulate the window's most-anomalous points into a rolling buffer,
+        # so mule-ring / ATO structure builds up and the Betti curve is a live signal
+        # (a single 0.5-day window rarely has enough points to form persistent loops).
+        top_pts = w_sorted.head(80)[_TOPO_COLS].to_numpy(dtype=float)
+        if len(top_pts):
+            self.anom_buffer = np.vstack([self.anom_buffer, top_pts])[-self.BUFFER_MAX:] \
+                if self.anom_buffer.size else top_pts
+        curve = betti_curve(self.anom_buffer, dim=1, n_bins=10) if self.anom_buffer.shape[0] >= 5 else []
+        betti = betti_numbers(self.anom_buffer) if self.anom_buffer.shape[0] >= 5 else {"betti0": 0.0, "betti1": 0.0, "betti2": 0.0}
         lg_win = self.logins[(self.logins["t_day"] >= lo) & (self.logins["t_day"] < hi)]
 
         return {
@@ -113,6 +128,7 @@ class TelemetryReplay:
             "threat_score": threat,
             "active_threats": int((w["prob"] >= self.threshold).sum()),
             "betti_curve1": [round(x, 2) for x in curve],
+            "betti": {k: round(v, 1) for k, v in betti.items()},
             "quantum": self._crypto_posture(lg_win),
             "flagged": flagged,
         }
