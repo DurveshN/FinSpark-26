@@ -13,7 +13,6 @@ backend/*.log
 backend/install.log
 backend/server.log
 ml/train.log
-ml/data/cust_betti_cache.csv
 docs
 assets
 *.stackdump

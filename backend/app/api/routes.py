@@ -34,6 +34,15 @@ def metrics() -> dict:
         return json.load(f)
 
 
+@router.get("/explain/{txn_id}")
+async def explain_txn_route(txn_id: str, node_idx: int) -> dict:
+    """On-demand SHAP reason codes for a flagged transaction (computed off the loop, cached)."""
+    import asyncio
+    from app.api.stream import explain_txn
+    codes = await asyncio.to_thread(explain_txn, node_idx, txn_id)
+    return {"txn_id": txn_id, "reason_codes": codes}
+
+
 @router.get("/alerts")
 def alerts(limit: int = 50, db: Session = Depends(get_session)) -> list[dict]:
     rows = recent_alerts(db, limit=limit)

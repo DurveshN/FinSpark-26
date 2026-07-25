@@ -2,9 +2,10 @@
 // stream (useTelemetryStream) and the trained model's metrics (useMetrics).
 // Every number here is computed by the model/pipeline — no mock data.
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTelemetryStream } from '../hooks/useTelemetryStream';
 import { useMetrics } from '../hooks/useMetrics';
+import { fetchExplain } from '../api/rest';
 import KpiCard from '../components/KpiCard';
 import ThreatTrend from '../components/ThreatTrend';
 import BettiChart from '../components/BettiChart';
@@ -18,6 +19,17 @@ export default function Dashboard({ onExit }) {
   const { latest, history, alerts, connected } = useTelemetryStream();
   const { metrics } = useMetrics();
   const [selected, setSelected] = useState(null);
+
+  // When an alert is clicked, fetch its real SHAP reason codes on demand.
+  const onSelect = useCallback((alert) => {
+    setSelected(alert);
+    if (alert && (!alert.reason_codes || alert.reason_codes.length === 0)) {
+      fetchExplain(alert.txn_id, alert.node_idx)
+        .then((r) => setSelected((cur) => cur && cur.txn_id === alert.txn_id
+          ? { ...cur, reason_codes: r.reason_codes } : cur))
+        .catch(() => {});
+    }
+  }, []);
 
   const threat = latest ? latest.threat_score : 0;
   const active = latest ? latest.active_threats : 0;
@@ -59,7 +71,7 @@ export default function Dashboard({ onExit }) {
 
       {/* alerts + XAI */}
       <div className="db-middle-row">
-        <AlertsList alerts={alerts} selected={selected} onSelect={setSelected} />
+        <AlertsList alerts={alerts} selected={selected} onSelect={onSelect} />
         <XaiWaterfall alert={selected} />
       </div>
 

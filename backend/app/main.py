@@ -25,17 +25,27 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)          # ensure tables (Alembic owns prod schema)
     loaded = store.load()
     if loaded and replay.load():
-        # apply tuned threshold from training artifacts
         mpath = os.path.join(settings.model_path, "metrics.json")
         if os.path.exists(mpath):
             with open(mpath) as f:
                 replay.threshold = float(json.load(f).get("threshold", 0.5))
         print(f"model loaded; stream threshold={replay.threshold}", flush=True)
+        # Heavy one-time full scoring runs in a BACKGROUND THREAD so startup stays
+        # fast and /health responds immediately (dashboard shows 'warming up' until ready).
+        asyncio.create_task(asyncio.to_thread(_prepare_replay))
     else:
         print("WARNING: model/data not found — train first (python -m ml.train)", flush=True)
     task = asyncio.create_task(stream.stream_loop())
     yield
     task.cancel()
+
+
+def _prepare_replay() -> None:
+    try:
+        replay.prepare()
+        print("telemetry replay ready (full dataset scored)", flush=True)
+    except Exception as e:
+        print(f"replay.prepare error: {e}", flush=True)
 
 
 app = FastAPI(title="QTD-HGNN Backend", version="1.0.0", lifespan=lifespan)
