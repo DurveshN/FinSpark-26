@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import Landing from './views/Landing';
 import Dashboard from './views/Dashboard';
-import './App.css';
 
 export default function App() {
   const [view, setView] = useState('landing');   // 'landing' | 'dashboard'

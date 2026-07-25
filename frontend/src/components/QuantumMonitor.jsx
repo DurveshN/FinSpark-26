@@ -1,34 +1,29 @@
 // Quantum-readiness panel — HONEST crypto-posture, not attack detection.
-// Shows the bank's own exposure: % of connections using quantum-vulnerable key
-// exchange (RSA/ECDHE-RSA) and count of weak/downgraded ciphers this window.
-// Explicitly does NOT claim to detect passive interception (physically impossible).
+// Bank's own exposure: % quantum-vulnerable key exchange + weak/downgrade events.
+import { Badge } from "@/components/ui/badge";
+import ChartCard from "./ChartCard";
 
 export default function QuantumMonitor({ quantum }) {
   const q = quantum || { total_conns: 0, quantum_vulnerable_pct: 0, downgrade_events: 0, modern_pct: 0 };
   const stats = [
-    { label: 'Quantum-vulnerable connections', value: `${q.quantum_vulnerable_pct}%`, accent: '#f59e0b' },
-    { label: 'PQC-ready / modern TLS', value: `${q.modern_pct}%`, accent: '#10b981' },
-    { label: 'Downgrade / weak-cipher events', value: q.downgrade_events, accent: '#ef4444' },
-    { label: 'Connections scanned', value: q.total_conns, accent: '#a78bfa' },
+    { label: "Quantum-vulnerable conns", value: `${q.quantum_vulnerable_pct}%`, tone: "text-amber-400" },
+    { label: "PQC-ready / modern TLS", value: `${q.modern_pct}%`, tone: "text-emerald-400" },
+    { label: "Downgrade / weak-cipher", value: q.downgrade_events, tone: "text-red-400" },
+    { label: "Connections scanned", value: q.total_conns, tone: "text-primary" },
   ];
   return (
-    <div className="db-chart-container">
-      <div className="db-chart-header">
-        <span className="chart-label">Quantum Risk Posture (crypto inventory)</span>
-        <span className="chart-val">RBI Q-SAFE</span>
-      </div>
-      <div className="db-metrics-row" style={{ marginTop: 8 }}>
+    <ChartCard title="Quantum Risk Posture" badge={<Badge variant="secondary" className="text-[10px]">RBI Q-SAFE · crypto inventory</Badge>}>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="metric-card-left" style={{ flex: 1 }}>
-            <div className="metric-value" style={{ color: s.accent, fontSize: 22 }}>{s.value}</div>
-            <div className="metric-label" style={{ fontSize: 11 }}>{s.label}</div>
+          <div key={s.label}>
+            <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>{s.value}</p>
+            <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{s.label}</p>
           </div>
         ))}
       </div>
-      <div className="xai-footer" style={{ marginTop: 8 }}>
-        Measures observable HNDL indicators (crypto exposure + downgrades). Passive
-        external interception is undetectable — mitigation is PQC migration.
-      </div>
-    </div>
+      <p className="mt-3 border-t border-border/50 pt-2 text-[11px] text-muted-foreground">
+        Observable HNDL indicators (crypto exposure + downgrades). Passive external interception is undetectable — mitigation is PQC migration.
+      </p>
+    </ChartCard>
   );
 }

@@ -1,38 +1,50 @@
-// Live alert queue. Each item is a real flagged transaction from the model, with
-// its scenario tag and score. Clicking selects it for the XAI waterfall.
+// Live alert queue. Each item is a real flagged transaction; click selects it for XAI.
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-const SCENARIO_LABEL = {
-  account_takeover: 'Account Takeover',
-  mule_ring: 'Mule Ring',
-  hndl_indicator: 'HNDL Indicator',
-  benign_anomaly: 'Benign Anomaly',
-  normal: 'Anomaly',
+const SCENARIO = {
+  account_takeover: { label: "Account Takeover", tone: "bg-red-500/15 text-red-400 border-red-500/30" },
+  mule_ring: { label: "Mule Ring", tone: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
+  hndl_indicator: { label: "HNDL Indicator", tone: "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30" },
+  benign_anomaly: { label: "Benign Anomaly", tone: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  normal: { label: "Anomaly", tone: "bg-slate-500/15 text-slate-300 border-slate-500/30" },
 };
 
 export default function AlertsList({ alerts, selected, onSelect }) {
   return (
-    <div className="db-alerts-list">
-      <div className="db-chart-header">
-        <span className="chart-label">Live Alert Queue</span>
-        <span className="chart-val">{alerts.length}</span>
-      </div>
-      {alerts.length === 0 && <div className="alert-desc" style={{ padding: 12 }}>No active threats in current window.</div>}
-      {alerts.map((a) => {
-        const sev = a.prob >= 0.9 ? '#ef4444' : a.prob >= 0.7 ? '#f59e0b' : '#10b981';
-        const isSel = selected && selected.txn_id === a.txn_id;
-        return (
-          <div key={a.txn_id} className="db-alert-item" onClick={() => onSelect(a)}
-               style={{ cursor: 'pointer', borderLeft: isSel ? `3px solid ${sev}` : '3px solid transparent' }}>
-            <div className="alert-item-left">
-              <span className="alert-severity-dot" style={{ background: sev }} />
-              <div className="alert-text">
-                <div className="alert-title">{SCENARIO_LABEL[a.scenario] || 'Threat'} — {a.txn_id}</div>
-                <div className="alert-desc">₹{Number(a.amount).toLocaleString('en-IN')} · {(a.prob * 100).toFixed(0)}% confidence</div>
+    <ScrollArea className="h-[340px] pr-3">
+      <div className="space-y-2">
+        {alerts.length === 0 && (
+          <p className="px-1 py-6 text-center text-sm text-muted-foreground">No active threats in current window.</p>
+        )}
+        {alerts.map((a) => {
+          const s = SCENARIO[a.scenario] || SCENARIO.normal;
+          const sev = a.prob >= 0.9 ? "bg-red-500" : a.prob >= 0.7 ? "bg-amber-500" : "bg-emerald-500";
+          const isSel = selected && selected.txn_id === a.txn_id;
+          return (
+            <button
+              key={a.txn_id}
+              onClick={() => onSelect(a)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
+                isSel ? "border-primary/60 bg-primary/10" : "border-border/50 bg-card/40 hover:bg-accent/40"
+              )}>
+              <span className={cn("h-2 w-2 shrink-0 rounded-full", sev)} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={cn("text-[10px]", s.tone)}>{s.label}</Badge>
+                  <span className="truncate font-mono text-xs text-muted-foreground">{a.txn_id}</span>
+                </div>
+                <p className="mt-1 text-sm text-foreground">
+                  ₹{Number(a.amount).toLocaleString("en-IN")}
+                  <span className="ml-2 text-xs text-muted-foreground">{(a.prob * 100).toFixed(0)}% confidence</span>
+                </p>
               </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+            </button>
+          );
+        })}
+      </div>
+    </ScrollArea>
   );
 }
