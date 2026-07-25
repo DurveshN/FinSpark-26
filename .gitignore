@@ -56,3 +56,4 @@ ml/data/
 .vercel
 npm-install.log
 *.stackdump
+sp.json*
