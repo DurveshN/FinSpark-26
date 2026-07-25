@@ -15,9 +15,13 @@
 ## Azure
 
 - Subscription: `Azure subscription 1` (id `92ecea33-...`) — verify with `az account show`.
-- **One resource group** holds all backend resources (name TBD, e.g. `rg-qtdhgnn`).
-- Region: TBD (India — e.g. `centralindia`) for data-residency alignment.
-- Resources: ACR, Container App (+ environment), PostgreSQL flexible server.
+- **One resource group** `rg-qtdhgnn` holds all backend resources.
+- Region: `centralindia` (data-residency alignment).
+- Resources: ACR (Basic), Container Apps environment + Container App, optional PostgreSQL Flexible Server (B1ms) — defaults to in-container SQLite to avoid DB cost until Postgres is needed.
+- **Provision:** `az login` then `bash infra/provision.sh` (edit vars at top; set `USE_POSTGRES=true` for managed DB). Script prints the backend URL + the values to put in GitHub Actions secrets.
+
+## Cost note
+- ACR Basic (~$5/mo) + Container App (scale-to-1, consumption) + optional Postgres B1ms (~$12-15/mo). SQLite mode keeps it to ACR + Container App only. Confirm subscription type (student credit vs pay-as-you-go) before provisioning.
 
 ## Deploy flow
 
