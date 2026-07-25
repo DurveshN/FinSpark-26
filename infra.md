@@ -44,4 +44,6 @@
 - Env probe (verified 2026-07-25): Python 3.13.5, Node 22.14, Docker 28.5, az 2.88 (logged in), gh (DurveshN, repo+workflow).
 
 ## Deploy gotchas (log)
-- 2026-07-25: `az acr build` on Windows crashed with `'charmap' codec can't encode` — Azure CLI Unicode output bug streaming remote build logs. `export` of PYTHONIOENCODING did NOT reach the CLI subprocess. Working fix: run with `--no-logs` AND inline env: `PYTHONUTF8=1 PYTHONIOENCODING=utf-8 az acr build ... --no-logs`. The remote build succeeds regardless; only local log streaming was crashing. RG + ACR persist across retries.
+- 2026-07-25: `az acr build` on Windows crashed with `'charmap' codec can't encode` — Azure CLI Unicode output bug streaming remote build logs. Only local log DISPLAY crashes; the remote build runs. But `--no-logs` also HID a real failure (returned exit 0). Lesson: after `--no-logs`, check `az acr task list-runs --top 1 --query [0].status`.
+- 2026-07-25 ROOT CAUSE of build failures: **`shap==0.52.0` requires Python >=3.12** but Dockerfile used `python:3.11-slim` → pip "No matching distribution for shap==0.52.0". Local venv is 3.13 so it installed there, masking the mismatch. FIX: base image `python:3.12-slim` (torch 2.13.0+cpu + ripser 0.6.15 have cp312 linux wheels; verified). CI setup-python bumped to 3.12. Diagnosed by building locally with Docker (readable output) after ACR logs were unreadable on Windows.
+- 2026-07-25: on Linux, `torch==2.13.0` pulls the CUDA wheel; pin `torch==2.13.0+cpu` (kept).

@@ -1,6 +1,7 @@
 # QTD-HGNN backend image. Includes the shared `ml` package (features/graph/model
 # reused at inference) and the trained artifacts. CPU-only torch.
-FROM python:3.11-slim
+# Python 3.12 required: shap>=0.52 needs >=3.12 (torch+cpu and ripser have cp312 wheels).
+FROM python:3.12-slim
 
 WORKDIR /app
 
