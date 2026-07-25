@@ -13,9 +13,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt ./backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# copy backend app, shared ml package, and trained artifacts
+# copy backend app + shared ml package (includes the committed trained model)
 COPY backend/ ./backend/
 COPY ml/ ./ml/
+
+# Build-time: regenerate synthetic data (deterministic) + pre-score the whole
+# dataset with the trained model. Bakes ml/data/*.csv + ml/artifacts/scored.csv +
+# graph.pt into the image so runtime startup is instant (no scoring on the event
+# loop) and the image is self-contained (works in CI where these are gitignored).
+RUN python -m ml.prescore
 
 WORKDIR /app/backend
 ENV PYTHONUNBUFFERED=1 \

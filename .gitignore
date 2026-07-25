@@ -45,13 +45,19 @@ install.log
 server.log
 ml/train.log
 
-# ML artifacts (large model/data files; metrics.json is kept)
-ml/artifacts/*.pt
-ml/artifacts/*.pkl
-ml/artifacts/*.joblib
+# ML: commit ONLY the small trained model (not reproducible without retraining).
+# Everything else is deterministic/derived and regenerated at build time by
+# `python -m ml.prescore` (which runs generate_synthetic first): raw data CSVs,
+# the betti cache, and the prescored scored.csv/graph.pt.
 ml/data/
 *.csv
+*.pkl
+*.joblib
+ml/artifacts/graph.pt
 !ml/artifacts/metrics.json
+!ml/artifacts/model.pt
+!ml/artifacts/scaler.npz
+!ml/artifacts/shap_background.npy
 
 .vercel
 npm-install.log

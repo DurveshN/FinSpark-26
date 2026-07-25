@@ -9,6 +9,8 @@ off-loop, and cached (see api/stream.py).
 from __future__ import annotations
 
 import os
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 import torch
@@ -51,7 +53,21 @@ class TelemetryReplay:
         return True
 
     def prepare(self) -> None:
-        """One-time full scoring (runs in a background thread). Heavy; sets ready."""
+        """Load BUILD-TIME pre-scored artifacts (fast, non-blocking). Falls back to
+        live scoring only if artifacts are absent (local dev without prescore)."""
+        art = settings.model_path
+        scored_p = os.path.join(art, "scored.csv")
+        graph_p = os.path.join(art, "graph.pt")
+
+        if os.path.exists(scored_p) and os.path.exists(graph_p):
+            self.feats = pd.read_csv(scored_p)
+            g = torch.load(graph_p, map_location="cpu")
+            self.data = SimpleNamespace(x=g["x"], edge_index=g["edge_index"])
+            self.ready = True
+            print(f"loaded pre-scored {len(self.feats)} txns (build-time artifacts)", flush=True)
+            return
+
+        # fallback: score live (heavy — only for local dev without `python -m ml.prescore`)
         if store.model is None or self.txns is None:
             return
         cache = os.path.join(settings.data_dir, "cust_betti_cache.csv")
@@ -67,9 +83,7 @@ class TelemetryReplay:
         self.feats = feats
         self.data = data
         self.ready = True
-        # SHAP is computed ON DEMAND when an analyst clicks an alert (/explain),
-        # never in the stream loop — computing it here (776 nodes) would hold the
-        # GIL and starve the event loop. On-demand subgraph SHAP is ~0.4s per click.
+        print(f"live-scored {len(feats)} txns (fallback)", flush=True)
 
     def next_window(self) -> dict:
         """Slice pre-scored results for the next window. Fast + non-blocking."""
