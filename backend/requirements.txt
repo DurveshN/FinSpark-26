@@ -14,7 +14,9 @@ alembic==1.16.5
 psycopg[binary]==3.2.10
 
 # --- ml inference (model load, scoring, topology, explainability) ---
-torch==2.13.0
+# +cpu build is REQUIRED: on Linux, plain torch==2.13.0 pulls the ~2.5GB CUDA wheel
+# from PyPI (bloats image, can OOM the build agent). +cpu resolves via the index above.
+torch==2.13.0+cpu
 torch-geometric==2.8.0.post1
 ripser==0.6.15
 shap==0.52.0

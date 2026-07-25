@@ -44,4 +44,4 @@
 - Env probe (verified 2026-07-25): Python 3.13.5, Node 22.14, Docker 28.5, az 2.88 (logged in), gh (DurveshN, repo+workflow).
 
 ## Deploy gotchas (log)
-- 2026-07-25: `az acr build` on Windows crashed with `'charmap' codec can't encode` — Azure CLI Unicode output bug. Fix: `export PYTHONIOENCODING=utf-8 PYTHONUTF8=1` (now baked into provision.sh). RG + ACR were created before the crash; retried build succeeded.
+- 2026-07-25: `az acr build` on Windows crashed with `'charmap' codec can't encode` — Azure CLI Unicode output bug streaming remote build logs. `export` of PYTHONIOENCODING did NOT reach the CLI subprocess. Working fix: run with `--no-logs` AND inline env: `PYTHONUTF8=1 PYTHONIOENCODING=utf-8 az acr build ... --no-logs`. The remote build succeeds regardless; only local log streaming was crashing. RG + ACR persist across retries.
