@@ -1,0 +1,26 @@
+{
+  "precision": 0.7142857142857143,
+  "recall": 0.9770114942528736,
+  "f1": 0.8252427184466019,
+  "auc": 0.9999784812136541,
+  "threshold": 0.99,
+  "features": [
+    "amount_zscore",
+    "log_amount",
+    "new_payee",
+    "sec_since_login",
+    "sec_since_payee_add",
+    "is_swift",
+    "is_imps",
+    "login_new_device",
+    "login_failed_prior",
+    "login_odd_hour",
+    "tls_quantum_vulnerable",
+    "tls_weak_downgrade",
+    "geo_mismatch",
+    "cust_betti0",
+    "cust_betti1",
+    "cust_betti2"
+  ],
+  "model": "QTDGraphSAGE"
+}

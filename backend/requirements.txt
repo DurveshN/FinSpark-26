@@ -1,9 +1,24 @@
-fastapi
-uvicorn[standard]
-websockets
-pandas
-numpy
-networkx
-scikit-learn
-torch --index-url https://download.pytorch.org/whl/cpu
-torch_geometric
+# Backend runtime + inference deps. CPU-only torch (no CUDA needed).
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# --- web / API ---
+fastapi==0.121.2
+uvicorn[standard]==0.38.0
+websockets==15.0.1
+pydantic==2.12.4
+pydantic-settings==2.12.0
+
+# --- database ---
+sqlalchemy==2.0.44
+alembic==1.16.5
+psycopg[binary]==3.2.10
+
+# --- ml inference (model load, scoring, topology, explainability) ---
+torch==2.13.0
+torch-geometric==2.8.0.post1
+ripser==0.6.15
+shap==0.52.0
+scikit-learn==1.9.0
+numpy>=2.1,<2.5
+pandas>=2.2,<2.4
+networkx==3.6.1

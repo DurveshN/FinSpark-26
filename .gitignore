@@ -37,6 +37,20 @@ __pycache__/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
+.env
+*.env
+.pytest_cache/
+*.db
+install.log
+server.log
+ml/train.log
 
+# ML artifacts (large model/data files; metrics.json is kept)
+ml/artifacts/*.pt
+ml/artifacts/*.pkl
+ml/artifacts/*.joblib
+ml/data/
+*.csv
+!ml/artifacts/metrics.json
 
 .vercel
