@@ -8,6 +8,11 @@
 # Prereqs: `az login` done; edit the vars below.
 set -euo pipefail
 
+# Force UTF-8 so `az acr build` output doesn't crash the CLI on Windows
+# ('charmap' codec can't encode ...). Harmless on Linux/mac.
+export PYTHONIOENCODING=utf-8
+export PYTHONUTF8=1
+
 # ---- edit these ----
 RG="rg-qtdhgnn"                     # single resource group
 LOCATION="centralindia"            # India region (data residency)

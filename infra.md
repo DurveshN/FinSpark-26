@@ -31,11 +31,17 @@
 
 ## Secrets (never committed)
 
-- GitHub Actions: `AZURE_CREDENTIALS`, `ACR_*`, `DATABASE_URL`.
-- Container App env: `DATABASE_URL`, `CORS_ORIGIN`, `MODEL_PATH`.
+- GitHub Actions: `AZURE_CREDENTIALS`, `ACR_NAME`, `RESOURCE_GROUP`, `CONTAINER_APP`.
+- Container App env: `DATABASE_URL`, `CORS_ORIGIN`, `MODEL_PATH`, `DATA_DIR`.
+
+## CI/CD access caveat (2026-07-25)
+- DurveshN has **push + triage** on `adhraj12/FinSpark-26` but **not admin** → cannot create repo secrets. Options: (a) adhraj12 adds the Actions secrets, or (b) mirror to a repo under DurveshN who owns secrets. Until then, `ci.yml` runs fine (no secrets), but `backend-deploy.yml` needs the secrets to work — meanwhile deploy manually via `az acr build` + `az containerapp update` (or re-run `provision.sh`).
 
 ## Local dev
 
 - Backend: `backend/.venv` + `uvicorn app.main:app`. Local Postgres or Docker.
 - Frontend: `cd frontend && npm install && npm run dev`.
 - Env probe (verified 2026-07-25): Python 3.13.5, Node 22.14, Docker 28.5, az 2.88 (logged in), gh (DurveshN, repo+workflow).
+
+## Deploy gotchas (log)
+- 2026-07-25: `az acr build` on Windows crashed with `'charmap' codec can't encode` — Azure CLI Unicode output bug. Fix: `export PYTHONIOENCODING=utf-8 PYTHONUTF8=1` (now baked into provision.sh). RG + ACR were created before the crash; retried build succeeded.
